@@ -1,6 +1,6 @@
 # LerneDeutsch 🇩🇪
 
-A self-study app for the **Decode German A2 Aufnahmeprüfung** — built with plain HTML, CSS and JS.
+A self-study app.
 
 ## How to use
 
