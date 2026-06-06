@@ -1,8 +1,1 @@
-# LerneDeutsch 🇩🇪
-
-A self-study app.
-
-## How to use
-
-
-Open `https://shahilmalik.github.io/Deutschhandbuch`
+Take me to [Deutschandbuch](https://shahilmalik.github.io/Deutschhandbuch)
