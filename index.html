@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude German</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 60%, #2e2e5e);
+    color: white;
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+  }
+  .hero h1 { font-size: 2.2rem; letter-spacing: 0.02em; }
+  .hero p  { margin-top: 0.5rem; opacity: 0.7; font-size: 0.95rem; }
+  .card-grid { max-width: 760px; }
+  .card .level { font-size: 2rem; }
+  .card-locked-msg {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    padding-bottom: 1.5rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🇩🇪 Claude German</h1>
+  <p>Your A2 Aufnahmeprüfung prep guide — Stuttgart edition</p>
+</div>
+
+<div class="card-grid">
+  <a href="a1_topics.html" class="card">
+    <span class="icon">📘</span>
+    <span class="level">A1</span>
+    <span class="desc">Beginner — Foundation level</span>
+    <span class="badge badge-active">✓ In progress</span>
+  </a>
+
+  <div class="card locked">
+    <span class="icon">📗</span>
+    <span class="level">A2</span>
+    <span class="desc">Elementary — Target level</span>
+    <span class="badge badge-locked">🔒 Coming soon</span>
+  </div>
+
+  <div class="card locked">
+    <span class="icon">📙</span>
+    <span class="level">B1</span>
+    <span class="desc">Intermediate</span>
+    <span class="badge badge-locked">🔒 Coming soon</span>
+  </div>
+
+  <div class="card locked">
+    <span class="icon">📕</span>
+    <span class="level">B2</span>
+    <span class="desc">Upper Intermediate</span>
+    <span class="badge badge-locked">🔒 Coming soon</span>
+  </div>
+</div>
+<p class="card-locked-msg">A2, B1, B2 will unlock as you progress</p>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# macOS
+.DS_Store
+.AppleDouble
+
+# Audio (large generated files — run generate_audio.py locally)
+Audio/
+
+# Build scripts (internal)
+build_*.py

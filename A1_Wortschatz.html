@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude German — A1 Wortschatz</title>
+<style>
+  :root {
+    --navy: #1a1a2e;
+    --blue: #4a4a8a;
+    --green: #2e6e4a;
+    --light-blue: #f0f0f8;
+    --light-green: #f0f8f4;
+    --pron: #9b1c1c;
+    --border: #ccccdd;
+    --text: #1a1a2e;
+    --muted: #666;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5fa; color: var(--text); }
+
+  header {
+    background: var(--navy);
+    color: white;
+    text-align: center;
+    padding: 2rem 1rem 1.5rem;
+  }
+  header h1 { font-size: 2rem; letter-spacing: 0.02em; }
+  header p  { opacity: 0.75; margin-top: 0.4rem; font-size: 0.95rem; }
+
+  .legend {
+    background: white;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+
+  /* Chapter card */
+  .chapter {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .chapter-header {
+    background: var(--navy);
+    color: white;
+    padding: 0.9rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .chapter-header h2 { font-size: 1.05rem; flex: 1; }
+  .chapter-header .sub { opacity: 0.65; font-size: 0.85rem; font-weight: normal; }
+
+  /* Play button */
+  .play-btn {
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.5);
+    color: white;
+    border-radius: 50px;
+    padding: 0.35rem 1rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .play-btn:hover  { background: rgba(255,255,255,0.28); }
+  .play-btn.playing { background: rgba(255,200,0,0.35); border-color: gold; }
+  .play-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  /* Section label */
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.45rem 1.2rem;
+    color: white;
+  }
+  .section-label.noun { background: var(--blue); }
+  .section-label.verb { background: var(--green); }
+
+  /* Table */
+  .vocab-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .vocab-table th {
+    text-align: left;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  th.noun-h { background: var(--blue); }
+  th.verb-h { background: var(--green); }
+  .vocab-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .vocab-table tr:last-child td { border-bottom: none; }
+  .vocab-table tr:nth-child(odd)  td { background: var(--light-blue); }
+  .vocab-table tr:nth-child(even) td { background: white; }
+  .verb-section tr:nth-child(odd)  td { background: var(--light-green); }
+  .verb-section tr:nth-child(even) td { background: white; }
+
+  .col-word   { color: var(--navy); font-weight: 600; }
+  .col-plural { color: var(--blue); }
+  .col-perf   { color: var(--green); }
+  .col-eng    { color: var(--muted); }
+  .col-pron   { color: var(--pron); font-style: italic; font-size: 0.82rem; }
+
+  /* Word-level play button */
+  .word-play {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    cursor: pointer;
+    color: var(--blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.12s, color 0.12s;
+    flex-shrink: 0;
+  }
+  .word-play:hover { background: var(--blue); color: white; border-color: var(--blue); }
+  .word-play svg { width: 9px; height: 9px; fill: currentColor; }
+  .word-cell { display: flex; align-items: center; gap: 0.5rem; }
+
+  footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.8rem; }
+
+  /* Voice bar */
+  #voiceBar {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.82rem;
+    color: #78350f;
+    flex-wrap: wrap;
+  }
+  #voiceBar label { font-weight: 600; white-space: nowrap; }
+  #voiceSel {
+    border: 1px solid #fbbf24;
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.82rem;
+    background: white;
+    color: #1a1a2e;
+    flex: 1;
+    min-width: 200px;
+    max-width: 420px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Claude German</h1>
+  <p>A1 Wortschatz · Kapitel 1–12 · Alle Vokabeln mit Artikel, Perfektform, Plural & Aussprache</p>
+</header>
+<div id="voiceBar">
+  <label>🔊 German voice:</label>
+  <select id="voiceSel"></select>
+  <span style="color:#92400e;font-size:0.78rem">If pronunciation sounds English, try a different voice from the list.</span>
+</div>
+<div class="legend">
+  ⸚ = Umlaut im Plural (z.B. Mann → Männer) &nbsp;|&nbsp; — = kein Plural / nur Singular &nbsp;|&nbsp;
+  <span style="color:var(--pron);font-style:italic">Rot kursiv = Aussprache (Großbuchstaben = betonte Silbe)</span> &nbsp;|&nbsp;
+  🔊 = Wort vorlesen &nbsp;|&nbsp; ▶ Play = ganzes Kapitel vorlesen
+</div>
+
+<div class="container" id="app"></div>
+
+<footer>Claude German · A1 Wortschatz · Audio powered by Web Speech API (German)</footer>
+
+<script>
+// ─── Vocabulary data ───────────────────────────────────────────────────────
+const CHAPTERS = [
+  {
+    num:1, title:"Begrüßung & Vorstellung", en:"Greetings & Introductions",
+    nouns:[
+      ["der Name, -n","die Namen","name","NAH-meh"],
+      ["der Vorname, -n","die Vornamen","first name","FOR-nah-meh"],
+      ["der Nachname, -n","die Nachnamen","surname","NAHKH-nah-meh"],
+      ["die Person, -en","die Personen","person","pehr-ZOHN"],
+      ["das Land, ⸚e","die Länder","country","lahnt"],
+      ["die Sprache, -n","die Sprachen","language","SHPRAH-kheh"],
+      ["die Frage, -n","die Fragen","question","FRAH-geh"],
+      ["die Antwort, -en","die Antworten","answer","ANT-vort"],
+      ["der Buchstabe, -n","die Buchstaben","letter (alphabet)","BOOKH-shtah-beh"],
+      ["die Zahl, -en","die Zahlen","number","tsahl"],
+      ["das Alphabet, -e","die Alphabete","alphabet","al-fah-BAYT"],
+      ["der Kurs, -e","die Kurse","course/class","koors"],
+      ["die Klasse, -n","die Klassen","class","KLAHS-seh"],
+      ["der Lehrer, -","die Lehrer","teacher (m)","LAY-rehr"],
+      ["die Lehrerin, -nen","die Lehrerinnen","teacher (f)","LAY-reh-rin"],
+      ["der Student, -en","die Studenten","student (m)","shtoo-DENT"],
+      ["die Studentin, -nen","die Studentinnen","student (f)","shtoo-DEN-tin"],
+    ],
+    verbs:[
+      ["heißen","hat geheißen","to be called","HY-sen"],
+      ["sein","ist gewesen","to be","zyne"],
+      ["kommen (aus)","ist gekommen","to come (from)","KOM-en"],
+      ["wohnen","hat gewohnt","to live/reside","VOH-nen"],
+      ["sprechen","hat gesprochen","to speak","SHPREH-khen"],
+      ["buchstabieren","hat buchstabiert","to spell","bookh-shtah-BEE-ren"],
+      ["vorstellen (sich)","hat sich vorgestellt","to introduce oneself","FOR-shtel-en"],
+      ["fragen","hat gefragt","to ask","FRAH-gen"],
+      ["antworten","hat geantwortet","to answer","ANT-vor-ten"],
+      ["wiederholen","hat wiederholt","to repeat","VEE-dehr-hoh-len"],
+    ]
+  },
+  {
+    num:2, title:"Länder, Berufe & Familie", en:"Countries, Jobs & Family",
+    nouns:[
+      ["die Familie, -n","die Familien","family","fah-MEE-lee-eh"],
+      ["der Mann, ⸚e","die Männer","man / husband","mahn"],
+      ["die Frau, -en","die Frauen","woman / wife","frow"],
+      ["das Kind, -er","die Kinder","child","kint"],
+      ["der Sohn, ⸚e","die Söhne","son","zohn"],
+      ["die Tochter, ⸚","die Töchter","daughter","TOKH-tehr"],
+      ["der Bruder, ⸚","die Brüder","brother","BROO-dehr"],
+      ["die Schwester, -n","die Schwestern","sister","SHVES-tehr"],
+      ["der Vater, ⸚","die Väter","father","FAH-tehr"],
+      ["die Mutter, ⸚","die Mütter","mother","MOO-tehr"],
+      ["die Eltern (Pl.)","—","parents","EL-tehrn"],
+      ["der Beruf, -e","die Berufe","job / profession","beh-ROOF"],
+      ["der Arzt, ⸚e","die Ärzte","doctor (m)","artst"],
+      ["die Ärztin, -nen","die Ärztinnen","doctor (f)","EHRTS-tin"],
+      ["der Ingenieur, -e","die Ingenieure","engineer (m)","in-zheh-NYOOR"],
+      ["die Ingenieurin, -nen","die Ingenieurinnen","engineer (f)","in-zheh-NYOO-rin"],
+      ["der Kellner, -","die Kellner","waiter","KEL-nehr"],
+      ["die Kellnerin, -nen","die Kellnerinnen","waitress","KEL-neh-rin"],
+      ["der Koch, ⸚e","die Köche","cook (m)","kokh"],
+      ["die Köchin, -nen","die Köchinnen","cook (f)","KOE-khin"],
+    ],
+    verbs:[
+      ["arbeiten","hat gearbeitet","to work","AR-by-ten"],
+      ["studieren","hat studiert","to study (university)","shtoo-DEE-ren"],
+      ["lernen","hat gelernt","to learn","LEHR-nen"],
+      ["leben","hat gelebt","to live","LAY-ben"],
+      ["haben","hat gehabt","to have","HAH-ben"],
+      ["heiraten","hat geheiratet","to marry","HY-rah-ten"],
+      ["kennen","hat gekannt","to know (a person)","KEN-en"],
+      ["mögen","hat gemocht","to like","MOE-gen"],
+    ]
+  },
+  {
+    num:3, title:"Essen & Trinken", en:"Food & Drinks",
+    nouns:[
+      ["das Frühstück, -e","die Frühstücke","breakfast","FROO-shtook"],
+      ["das Mittagessen, -","die Mittagessen","lunch","MIT-tahk-es-en"],
+      ["das Abendessen, -","die Abendessen","dinner","AH-bent-es-en"],
+      ["das Brot, -e","die Brote","bread","broht"],
+      ["die Milch (Sg.)","—","milk","milkh"],
+      ["der Käse, -","die Käse","cheese","KAY-zeh"],
+      ["das Ei, -er","die Eier","egg","eye"],
+      ["die Butter (Sg.)","—","butter","BOO-tehr"],
+      ["der Apfel, ⸚","die Äpfel","apple","AP-fel"],
+      ["die Banane, -n","die Bananen","banana","bah-NAH-neh"],
+      ["das Gemüse (Sg.)","—","vegetables","geh-MOO-zeh"],
+      ["das Fleisch (Sg.)","—","meat","flysh"],
+      ["der Fisch, -e","die Fische","fish","fish"],
+      ["die Suppe, -n","die Suppen","soup","ZOO-peh"],
+      ["der Salat, -e","die Salate","salad","zah-LAHT"],
+      ["das Wasser (Sg.)","—","water","VAS-ehr"],
+      ["der Kaffee, -s","die Kaffees","coffee","KAH-fay"],
+      ["der Tee, -s","die Tees","tea","tay"],
+      ["der Saft, ⸚e","die Säfte","juice","zahft"],
+      ["das Bier, -e","die Biere","beer","beer"],
+      ["der Wein, -e","die Weine","wine","vyne"],
+      ["das Restaurant, -s","die Restaurants","restaurant","res-toh-RAHNG"],
+      ["die Speisekarte, -n","die Speisekarten","menu","SHPY-zeh-kar-teh"],
+      ["die Rechnung, -en","die Rechnungen","bill","REKH-nung"],
+    ],
+    verbs:[
+      ["essen","hat gegessen","to eat","ES-en"],
+      ["trinken","hat getrunken","to drink","TRING-ken"],
+      ["kochen","hat gekocht","to cook","KO-khen"],
+      ["bestellen","hat bestellt","to order","beh-SHTEL-en"],
+      ["bezahlen","hat bezahlt","to pay","beh-TSAH-len"],
+      ["schmecken","hat geschmeckt","to taste","SHMEK-en"],
+      ["kaufen","hat gekauft","to buy","KOW-fen"],
+      ["möchten","hat gemocht","to would like","MOEKH-ten"],
+    ]
+  },
+  {
+    num:4, title:"Alltag & Uhrzeit", en:"Daily Routine & Time",
+    nouns:[
+      ["die Uhrzeit, -en","die Uhrzeiten","time of day","OOR-tsyte"],
+      ["die Stunde, -n","die Stunden","hour","SHTOON-deh"],
+      ["die Minute, -n","die Minuten","minute","mee-NOO-teh"],
+      ["der Tag, -e","die Tage","day","tahk"],
+      ["die Woche, -n","die Wochen","week","VO-kheh"],
+      ["der Monat, -e","die Monate","month","MOH-naht"],
+      ["das Jahr, -e","die Jahre","year","yahr"],
+      ["der Morgen, -","die Morgen","morning","MOR-gen"],
+      ["der Mittag, -e","die Mittage","midday/noon","MIT-tahk"],
+      ["der Abend, -e","die Abende","evening","AH-bent"],
+      ["die Nacht, ⸚e","die Nächte","night","nakht"],
+      ["der Montag","—","Monday","MON-tahk"],
+      ["der Dienstag","—","Tuesday","DEENS-tahk"],
+      ["der Mittwoch","—","Wednesday","MIT-vokh"],
+      ["der Donnerstag","—","Thursday","DON-ers-tahk"],
+      ["der Freitag","—","Friday","FRY-tahk"],
+      ["der Samstag","—","Saturday","ZAHMS-tahk"],
+      ["der Sonntag","—","Sunday","ZON-tahk"],
+      ["der Wecker, -","die Wecker","alarm clock","VEK-ehr"],
+      ["die Arbeit, -en","die Arbeiten","work","AR-byte"],
+      ["die Pause, -n","die Pausen","break","POW-zeh"],
+    ],
+    verbs:[
+      ["aufstehen","ist aufgestanden","to get up","OWF-shtay-en"],
+      ["einschlafen","ist eingeschlafen","to fall asleep","YNE-shlah-fen"],
+      ["frühstücken","hat gefrühstückt","to have breakfast","FROO-shtoo-ken"],
+      ["anfangen","hat angefangen","to begin/start","AN-fang-en"],
+      ["aufhören","hat aufgehört","to stop/finish","OWF-hoe-ren"],
+      ["fahren","ist gefahren","to drive/travel","FAH-ren"],
+      ["gehen","ist gegangen","to go","GAY-en"],
+      ["kommen","ist gekommen","to come","KOM-en"],
+      ["beginnen","hat begonnen","to begin","beh-GIN-en"],
+      ["dauern","hat gedauert","to last/take (time)","DOW-ehrn"],
+    ]
+  },
+  {
+    num:5, title:"Zuhause & Wohnen", en:"Home & Living",
+    nouns:[
+      ["die Wohnung, -en","die Wohnungen","apartment/flat","VOH-nung"],
+      ["das Haus, ⸚er","die Häuser","house","hows"],
+      ["das Zimmer, -","die Zimmer","room","TSIM-ehr"],
+      ["die Küche, -n","die Küchen","kitchen","KOO-kheh"],
+      ["das Badezimmer, -","die Badezimmer","bathroom","BAH-deh-tsim-ehr"],
+      ["das Schlafzimmer, -","die Schlafzimmer","bedroom","SHLAHF-tsim-ehr"],
+      ["das Wohnzimmer, -","die Wohnzimmer","living room","VOHN-tsim-ehr"],
+      ["der Garten, ⸚","die Gärten","garden","GAR-ten"],
+      ["der Balkon, -e","die Balkone","balcony","bal-KONG"],
+      ["das Bett, -en","die Betten","bed","bet"],
+      ["der Tisch, -e","die Tische","table","tish"],
+      ["der Stuhl, ⸚e","die Stühle","chair","shtool"],
+      ["das Sofa, -s","die Sofas","sofa","ZOH-fah"],
+      ["der Schrank, ⸚e","die Schränke","cupboard/wardrobe","shrangk"],
+      ["das Regal, -e","die Regale","shelf","reh-GAHL"],
+      ["die Lampe, -n","die Lampen","lamp","LAHM-peh"],
+      ["der Kühlschrank, ⸚e","die Kühlschränke","refrigerator","KOOL-shrangk"],
+      ["die Dusche, -n","die Duschen","shower","DOO-sheh"],
+      ["die Badewanne, -n","die Badewannen","bathtub","BAH-deh-van-eh"],
+      ["die Miete, -n","die Mieten","rent","MEE-teh"],
+      ["der Vermieter, -","die Vermieter","landlord","fehr-MEE-tehr"],
+      ["die Adresse, -n","die Adressen","address","ah-DRES-eh"],
+    ],
+    verbs:[
+      ["wohnen","hat gewohnt","to live/reside","VOH-nen"],
+      ["mieten","hat gemietet","to rent","MEE-ten"],
+      ["suchen","hat gesucht","to look for","ZOO-khen"],
+      ["finden","hat gefunden","to find","FIN-den"],
+      ["einziehen","ist eingezogen","to move in","YNE-tsee-en"],
+      ["aufräumen","hat aufgeräumt","to tidy up","OWF-roy-men"],
+      ["putzen","hat geputzt","to clean","POO-tsen"],
+      ["kosten","hat gekostet","to cost","KOS-ten"],
+    ]
+  },
+  {
+    num:6, title:"Einkaufen & Preise", en:"Shopping & Prices",
+    nouns:[
+      ["der Supermarkt, ⸚e","die Supermärkte","supermarket","ZOO-pehr-markt"],
+      ["das Geschäft, -e","die Geschäfte","shop/store","geh-SHEFT"],
+      ["der Markt, ⸚e","die Märkte","market","markt"],
+      ["die Bäckerei, -en","die Bäckereien","bakery","bek-eh-RYE"],
+      ["der Preis, -e","die Preise","price","pryce"],
+      ["das Geld (Sg.)","—","money","gelt"],
+      ["der Euro, -s","die Euros","euro","OY-roh"],
+      ["der Cent, -s","die Cents","cent","sent"],
+      ["die Kasse, -n","die Kassen","checkout / cash register","KAS-eh"],
+      ["die Tasche, -n","die Taschen","bag","TASH-eh"],
+      ["das Kleid, -er","die Kleider","dress","klyte"],
+      ["die Hose, -n","die Hosen","trousers/pants","HOH-zeh"],
+      ["das Hemd, -en","die Hemden","shirt","hemt"],
+      ["der Pullover, -","die Pullover","sweater","pool-OH-vehr"],
+      ["die Jacke, -n","die Jacken","jacket","YAK-eh"],
+      ["der Schuh, -e","die Schuhe","shoe","shoo"],
+      ["die Größe, -n","die Größen","size","GROE-seh"],
+      ["die Farbe, -n","die Farben","colour","FAR-beh"],
+    ],
+    verbs:[
+      ["kaufen","hat gekauft","to buy","KOW-fen"],
+      ["verkaufen","hat verkauft","to sell","fehr-KOW-fen"],
+      ["bezahlen","hat bezahlt","to pay","beh-TSAH-len"],
+      ["kosten","hat gekostet","to cost","KOS-ten"],
+      ["anprobieren","hat anprobiert","to try on","AN-proh-bee-ren"],
+      ["tragen","hat getragen","to wear/carry","TRAH-gen"],
+      ["nehmen","hat genommen","to take","NAY-men"],
+      ["brauchen","hat gebraucht","to need","BROW-khen"],
+    ]
+  },
+  {
+    num:7, title:"Verkehr & Wegbeschreibung", en:"Transport & Directions",
+    nouns:[
+      ["das Auto, -s","die Autos","car","OW-toh"],
+      ["der Bus, -se","die Busse","bus","boos"],
+      ["die Straßenbahn, -en","die Straßenbahnen","tram","SHTRAH-sen-bahn"],
+      ["der Zug, ⸚e","die Züge","train","tsook"],
+      ["das Fahrrad, ⸚er","die Fahrräder","bicycle","FAR-raht"],
+      ["das Flugzeug, -e","die Flugzeuge","airplane","FLOOK-tsoyk"],
+      ["der Bahnhof, ⸚e","die Bahnhöfe","train station","BAHN-hohf"],
+      ["der Flughafen, ⸚","die Flughäfen","airport","FLOOK-hah-fen"],
+      ["die Haltestelle, -n","die Haltestellen","stop (bus/tram)","HAL-teh-shtel-eh"],
+      ["die Straße, -n","die Straßen","street","SHTRAH-seh"],
+      ["der Weg, -e","die Wege","way/path","vayk"],
+      ["die Kreuzung, -en","die Kreuzungen","crossroads","KROY-tsung"],
+      ["die Ampel, -n","die Ampeln","traffic light","AM-pel"],
+      ["die Fahrkarte, -n","die Fahrkarten","ticket","FAR-kar-teh"],
+      ["der Parkplatz, ⸚e","die Parkplätze","parking space","PARK-plats"],
+    ],
+    verbs:[
+      ["fahren","ist gefahren","to drive/travel","FAH-ren"],
+      ["fliegen","ist geflogen","to fly","FLEE-gen"],
+      ["gehen","ist gegangen","to walk/go","GAY-en"],
+      ["laufen","ist gelaufen","to run/walk","LOW-fen"],
+      ["einsteigen","ist eingestiegen","to get in/on","YNE-shty-gen"],
+      ["aussteigen","ist ausgestiegen","to get off","OWS-shty-gen"],
+      ["umsteigen","ist umgestiegen","to transfer/change","OOM-shty-gen"],
+      ["parken","hat geparkt","to park","PAR-ken"],
+      ["abbiegen","ist abgebogen","to turn","AB-bee-gen"],
+    ]
+  },
+  {
+    num:8, title:"Gesundheit & Körper", en:"Health & Body",
+    nouns:[
+      ["der Kopf, ⸚e","die Köpfe","head","kopf"],
+      ["das Auge, -n","die Augen","eye","OW-geh"],
+      ["die Nase, -n","die Nasen","nose","NAH-zeh"],
+      ["der Mund, ⸚er","die Münder","mouth","moont"],
+      ["das Ohr, -en","die Ohren","ear","ohr"],
+      ["der Hals, ⸚e","die Hälse","neck/throat","hahls"],
+      ["der Arm, -e","die Arme","arm","arm"],
+      ["die Hand, ⸚e","die Hände","hand","hahnt"],
+      ["das Bein, -e","die Beine","leg","byne"],
+      ["der Fuß, ⸚e","die Füße","foot","foos"],
+      ["der Bauch, ⸚e","die Bäuche","stomach/belly","bowkh"],
+      ["der Rücken, -","die Rücken","back","ROO-ken"],
+      ["die Erkältung, -en","die Erkältungen","cold (illness)","ehr-KEL-tung"],
+      ["das Fieber (Sg.)","—","fever","FEE-behr"],
+      ["der Schmerz, -en","die Schmerzen","pain","shmehrts"],
+      ["die Kopfschmerzen (Pl.)","—","headache","KOPF-shmehr-tsen"],
+      ["die Tablette, -n","die Tabletten","tablet/pill","tah-BLET-eh"],
+      ["das Krankenhaus, ⸚er","die Krankenhäuser","hospital","KRANK-en-hows"],
+      ["der Arzt, ⸚e","die Ärzte","doctor","artst"],
+      ["die Apotheke, -n","die Apotheken","pharmacy","ah-poh-TAY-keh"],
+    ],
+    verbs:[
+      ["wehtun","hat wehgetan","to hurt","VAY-toon"],
+      ["sich fühlen","hat sich gefühlt","to feel","zikh FOO-len"],
+      ["krank sein","ist krank gewesen","to be ill","krangk zyne"],
+      ["husten","hat gehustet","to cough","HOOS-ten"],
+      ["niesen","hat geniest","to sneeze","NEE-zen"],
+      ["schlafen","hat geschlafen","to sleep","SHLAH-fen"],
+      ["aufwachen","ist aufgewacht","to wake up","OWF-vah-khen"],
+      ["erholen (sich)","hat sich erholt","to recover/rest","ehr-HOH-len"],
+    ]
+  },
+  {
+    num:9, title:"Hobbys & Freizeit", en:"Hobbies & Free Time",
+    nouns:[
+      ["das Hobby, -s","die Hobbys","hobby","HOB-ee"],
+      ["der Sport (Sg.)","—","sport","shport"],
+      ["das Fußball (Sg.)","—","football/soccer","FOOS-bal"],
+      ["das Tennis (Sg.)","—","tennis","TEN-is"],
+      ["das Schwimmen (Sg.)","—","swimming","SHVIM-en"],
+      ["die Musik (Sg.)","—","music","moo-ZEEK"],
+      ["das Konzert, -e","die Konzerte","concert","kon-TSEHRT"],
+      ["das Kino, -s","die Kinos","cinema","KEE-noh"],
+      ["der Film, -e","die Filme","film/movie","film"],
+      ["das Buch, ⸚er","die Bücher","book","bookh"],
+      ["die Zeitung, -en","die Zeitungen","newspaper","TSYTE-ung"],
+      ["die Party, -s","die Partys","party","PAR-tee"],
+      ["der Urlaub, -e","die Urlaube","holiday/vacation","OOR-lowp"],
+      ["das Wochenende, -n","die Wochenenden","weekend","VO-khen-en-deh"],
+      ["die Freizeit (Sg.)","—","free time","FRY-tsyte"],
+      ["das Spiel, -e","die Spiele","game","shpeel"],
+      ["der Verein, -e","die Vereine","club/association","fehr-YNE"],
+    ],
+    verbs:[
+      ["spielen","hat gespielt","to play","SHPEE-len"],
+      ["lesen","hat gelesen","to read","LAY-zen"],
+      ["sehen / schauen","hat gesehen / geschaut","to watch/see","ZAY-en / SHOW-en"],
+      ["hören","hat gehört","to hear/listen","HOE-ren"],
+      ["tanzen","hat getanzt","to dance","TAN-tsen"],
+      ["singen","hat gesungen","to sing","ZING-en"],
+      ["reisen","ist gereist","to travel","RY-zen"],
+      ["wandern","ist gewandert","to hike","VAN-dehrn"],
+      ["schwimmen","ist geschwommen","to swim","SHVIM-en"],
+      ["treffen (sich)","hat sich getroffen","to meet","TREF-en"],
+    ]
+  },
+  {
+    num:10, title:"Wetter & Jahreszeiten", en:"Weather & Seasons",
+    nouns:[
+      ["das Wetter (Sg.)","—","weather","VET-ehr"],
+      ["die Temperatur, -en","die Temperaturen","temperature","tem-peh-rah-TOOR"],
+      ["der Grad, -e","die Grad","degree","graht"],
+      ["die Sonne (Sg.)","—","sun","ZON-eh"],
+      ["der Regen (Sg.)","—","rain","RAY-gen"],
+      ["der Schnee (Sg.)","—","snow","shnay"],
+      ["der Wind, -e","die Winde","wind","vint"],
+      ["der Nebel (Sg.)","—","fog","NAY-bel"],
+      ["das Gewitter, -","die Gewitter","thunderstorm","geh-VIT-ehr"],
+      ["die Wolke, -n","die Wolken","cloud","VOL-keh"],
+      ["der Frühling, -e","die Frühlinge","spring","FROO-ling"],
+      ["der Sommer, -","die Sommer","summer","ZOM-ehr"],
+      ["der Herbst, -e","die Herbste","autumn","hehrbst"],
+      ["der Winter, -","die Winter","winter","VIN-tehr"],
+      ["die Jahreszeit, -en","die Jahreszeiten","season","YAH-res-tsyte"],
+    ],
+    verbs:[
+      ["scheinen","hat geschienen","to shine","SHY-nen"],
+      ["regnen","hat geregnet","to rain","RAYG-nen"],
+      ["schneien","hat geschneit","to snow","SHNY-en"],
+      ["wehen","hat geweht","to blow (wind)","VAY-en"],
+      ["werden","ist geworden","to become","VEHR-den"],
+      ["gefallen","hat gefallen","to please / to like","geh-FAL-en"],
+    ]
+  },
+  {
+    num:11, title:"Arbeit & Berufe", en:"Work & Professions",
+    nouns:[
+      ["der Beruf, -e","die Berufe","profession","beh-ROOF"],
+      ["die Arbeit, -en","die Arbeiten","work","AR-byte"],
+      ["das Büro, -s","die Büros","office","boo-ROH"],
+      ["die Firma, Firmen","die Firmen","company/firm","FIR-mah"],
+      ["der Chef, -s","die Chefs","boss (m)","shef"],
+      ["die Chefin, -nen","die Chefinnen","boss (f)","SHEF-in"],
+      ["der Kollege, -n","die Kollegen","colleague (m)","kol-LAY-geh"],
+      ["die Kollegin, -nen","die Kolleginnen","colleague (f)","kol-LAY-gin"],
+      ["das Gehalt, ⸚er","die Gehälter","salary","geh-HALT"],
+      ["die Stelle, -n","die Stellen","position/job","SHTEL-eh"],
+      ["der Termin, -e","die Termine","appointment","tehr-MEEN"],
+      ["die E-Mail, -s","die E-Mails","email","ee-mayl"],
+      ["das Telefon, -e","die Telefone","telephone","teh-leh-FOHN"],
+      ["der Computer, -","die Computer","computer","kom-PYOO-tehr"],
+      ["der Drucker, -","die Drucker","printer","DROO-kehr"],
+      ["die Besprechung, -en","die Besprechungen","meeting","beh-SHPREH-khung"],
+    ],
+    verbs:[
+      ["arbeiten","hat gearbeitet","to work","AR-by-ten"],
+      ["anrufen","hat angerufen","to call (phone)","AN-roo-fen"],
+      ["schreiben","hat geschrieben","to write","SHRY-ben"],
+      ["lesen","hat gelesen","to read","LAY-zen"],
+      ["schicken","hat geschickt","to send","SHIK-en"],
+      ["helfen","hat geholfen","to help","HEL-fen"],
+      ["erklären","hat erklärt","to explain","ehr-KLEH-ren"],
+      ["verdienen","hat verdient","to earn","fehr-DEE-nen"],
+      ["beginnen","hat begonnen","to begin","beh-GIN-en"],
+      ["beenden","hat beendet","to finish/end","beh-EN-den"],
+    ]
+  },
+  {
+    num:12, title:"Reisen & Urlaub", en:"Travel & Holidays",
+    nouns:[
+      ["die Reise, -n","die Reisen","trip/journey","RY-zeh"],
+      ["der Urlaub, -e","die Urlaube","holiday/vacation","OOR-lowp"],
+      ["das Hotel, -s","die Hotels","hotel","hoh-TEL"],
+      ["das Zimmer, -","die Zimmer","room","TSIM-ehr"],
+      ["die Reservierung, -en","die Reservierungen","reservation","reh-zehr-VEE-rung"],
+      ["der Pass, ⸚e","die Pässe","passport","pahs"],
+      ["das Visum, Visa","die Visa/Visen","visa","VEE-zoom"],
+      ["der Koffer, -","die Koffer","suitcase","KOF-ehr"],
+      ["die Tasche, -n","die Taschen","bag","TASH-eh"],
+      ["das Ticket, -s","die Tickets","ticket","TIK-et"],
+      ["der Strand, ⸚e","die Strände","beach","shtrant"],
+      ["das Meer (Sg.)","—","sea/ocean","mayr"],
+      ["der Berg, -e","die Berge","mountain","behrk"],
+      ["der See, -n","die Seen","lake","zay"],
+      ["die Stadt, ⸚e","die Städte","city","shtat"],
+      ["das Dorf, ⸚er","die Dörfer","village","dorf"],
+      ["die Sehenswürdigkeit, -en","die Sehenswürdigkeiten","tourist attraction","ZAY-ens-voor-dikh-kyte"],
+      ["die Kamera, -s","die Kameras","camera","KAH-meh-rah"],
+      ["das Souvenir, -s","die Souvenirs","souvenir","zoo-veh-NEER"],
+    ],
+    verbs:[
+      ["reisen","ist gereist","to travel","RY-zen"],
+      ["buchen","hat gebucht","to book","BOO-khen"],
+      ["reservieren","hat reserviert","to reserve","reh-zehr-VEE-ren"],
+      ["packen","hat gepackt","to pack","PAK-en"],
+      ["ankommen","ist angekommen","to arrive","AN-kom-en"],
+      ["abfahren","ist abgefahren","to depart","AB-fah-ren"],
+      ["übernachten","hat übernachtet","to stay overnight","oo-behr-NAKH-ten"],
+      ["fotografieren","hat fotografiert","to photograph","foh-toh-grah-FEE-ren"],
+      ["besuchen","hat besucht","to visit","beh-ZOO-khen"],
+      ["erkunden","hat erkundet","to explore","ehr-KOON-den"],
+    ]
+  },
+];
+
+// ─── Voice engine ──────────────────────────────────────────────────────────
+let germanVoice = null;
+let currentBtn  = null;
+
+// Voices load asynchronously — wait for them, then pick the best German one
+function loadGermanVoice() {
+  return new Promise(resolve => {
+    function pick() {
+      const all = window.speechSynthesis.getVoices();
+      if (!all.length) return;                       // not ready yet
+      const de = all.filter(v => v.lang.startsWith('de'));
+      if (!de.length) { resolve(null); return; }
+
+      // Preference order: neural/enhanced > any de-DE > any de
+      const preferred = de.find(v => /neural|enhanced|premium/i.test(v.name))
+                     || de.find(v => v.lang === 'de-DE')
+                     || de[0];
+      germanVoice = preferred;
+
+      // Populate selector
+      const sel = document.getElementById('voiceSel');
+      sel.innerHTML = '';
+      de.forEach((v, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${v.name} (${v.lang})`;
+        if (v === preferred) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.onchange = () => { germanVoice = de[parseInt(sel.value)]; };
+      document.getElementById('voiceBar').style.display = 'flex';
+      resolve(preferred);
+    }
+
+    const v = window.speechSynthesis.getVoices();
+    if (v.length) { pick(); }
+    else { window.speechSynthesis.onvoiceschanged = pick; }
+  });
+}
+
+function utter(text, rate = 0.85) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang  = 'de-DE';
+  u.rate  = rate;
+  if (germanVoice) u.voice = germanVoice;
+  return u;
+}
+
+function stopSpeech() {
+  window.speechSynthesis.cancel();
+  if (currentBtn) {
+    currentBtn.classList.remove('playing');
+    currentBtn.innerHTML = playIcon() + ' Play';
+    currentBtn = null;
+  }
+}
+
+function playIcon() { return '<svg viewBox="0 0 10 10"><polygon points="1,0 9,5 1,10"/></svg>'; }
+function stopIcon() { return '<svg viewBox="0 0 10 10"><rect x="1" y="1" width="3.5" height="8"/><rect x="5.5" y="1" width="3.5" height="8"/></svg>'; }
+
+function speakWord(word) {
+  window.speechSynthesis.cancel();
+  const clean = word.split(',')[0].replace(/^(der|die|das|ein|eine)\s+/i, '').trim();
+  window.speechSynthesis.speak(utter(clean));
+}
+
+function speakChapter(ch, btn) {
+  if (currentBtn === btn) { stopSpeech(); return; }
+  stopSpeech();
+  currentBtn = btn;
+  btn.classList.add('playing');
+  btn.innerHTML = stopIcon() + ' Stop';
+
+  const words = [ch.title, 'Nomen.'];
+  ch.nouns.forEach(n => {
+    const w = n[0].split(',')[0];
+    words.push(w, w);
+  });
+  words.push('Verben.');
+  ch.verbs.forEach(v => {
+    const w = v[0].split('/')[0].trim();
+    words.push(w, w);
+  });
+
+  let i = 0;
+  function next() {
+    if (i >= words.length || currentBtn !== btn) { stopSpeech(); return; }
+    const u = utter(words[i++], i <= 2 ? 1.0 : 0.82);
+    u.onend = next;
+    window.speechSynthesis.speak(u);
+  }
+  next();
+}
+
+// ─── Render ────────────────────────────────────────────────────────────────
+const app = document.getElementById('app');
+
+CHAPTERS.forEach(ch => {
+  const card = document.createElement('div');
+  card.className = 'chapter';
+
+  // Header with play button
+  const hdr = document.createElement('div');
+  hdr.className = 'chapter-header';
+  hdr.innerHTML = `<h2>Kapitel ${ch.num}: ${ch.title} <span class="sub">(${ch.en})</span></h2>`;
+  const btn = document.createElement('button');
+  btn.className = 'play-btn';
+  btn.innerHTML = playIcon() + ' Play';
+  btn.onclick = () => speakChapter(ch, btn);
+  hdr.appendChild(btn);
+  card.appendChild(hdr);
+
+  // Nouns
+  const nLabel = document.createElement('div');
+  nLabel.className = 'section-label noun';
+  nLabel.textContent = 'Nomen (Nouns)';
+  card.appendChild(nLabel);
+
+  const nWrap = document.createElement('div');
+  const nTable = document.createElement('table');
+  nTable.className = 'vocab-table';
+  nTable.innerHTML = `<thead><tr>
+    <th class="noun-h">Artikel + Nomen</th>
+    <th class="noun-h">Plural</th>
+    <th class="noun-h">Bedeutung</th>
+    <th class="noun-h">Aussprache</th>
+  </tr></thead>`;
+  const nBody = document.createElement('tbody');
+  ch.nouns.forEach(([word, plural, eng, pron]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-word"><div class="word-cell">
+        <button class="word-play" onclick="speakWord('${word.replace(/'/g,"\\'")}')"><svg viewBox="0 0 10 10"><polygon points="1,0 9,5 1,10"/></svg></button>
+        ${word}
+      </div></td>
+      <td class="col-plural">${plural}</td>
+      <td class="col-eng">${eng}</td>
+      <td class="col-pron">${pron}</td>`;
+    nBody.appendChild(tr);
+  });
+  nTable.appendChild(nBody);
+  nWrap.appendChild(nTable);
+  card.appendChild(nWrap);
+
+  // Verbs
+  const vLabel = document.createElement('div');
+  vLabel.className = 'section-label verb';
+  vLabel.textContent = 'Verben (Verbs) — Infinitiv, Perfekt & Aussprache';
+  card.appendChild(vLabel);
+
+  const vWrap = document.createElement('div');
+  vWrap.className = 'verb-section';
+  const vTable = document.createElement('table');
+  vTable.className = 'vocab-table';
+  vTable.innerHTML = `<thead><tr>
+    <th class="verb-h">Infinitiv</th>
+    <th class="verb-h">Perfekt</th>
+    <th class="verb-h">Bedeutung</th>
+    <th class="verb-h">Aussprache</th>
+  </tr></thead>`;
+  const vBody = document.createElement('tbody');
+  ch.verbs.forEach(([inf, perf, eng, pron]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-word"><div class="word-cell">
+        <button class="word-play" onclick="speakWord('${inf.replace(/'/g,"\\'")}')"><svg viewBox="0 0 10 10"><polygon points="1,0 9,5 1,10"/></svg></button>
+        ${inf}
+      </div></td>
+      <td class="col-perf">${perf}</td>
+      <td class="col-eng">${eng}</td>
+      <td class="col-pron">${pron}</td>`;
+    vBody.appendChild(tr);
+  });
+  vTable.appendChild(vBody);
+  vWrap.appendChild(vTable);
+  card.appendChild(vWrap);
+
+  app.appendChild(card);
+});
+
+// Boot voice engine
+loadGermanVoice().then(v => {
+  if (!v) {
+    document.getElementById('voiceBar').style.display = 'flex';
+    document.getElementById('voiceBar').innerHTML =
+      '<span style="color:#b91c1c;font-size:0.85rem">⚠️ No German voice found. Go to System Settings → Accessibility → Spoken Content and download a German (Deutschland) voice.</span>';
+  }
+});
+</script>
+</body>
+</html>

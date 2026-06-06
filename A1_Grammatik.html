@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude German — A1 Grammatik</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back" onclick="location.href='a1_topics.html'">← Back</button>
+  <h1>A1 Grammatik — Complete Reference</h1>
+</div>
+
+<div id="voiceBar">
+  <label>🔊 German voice:</label>
+  <select id="voiceSel"></select>
+  <span style="color:#92400e;font-size:0.78rem">If it sounds English, try a different voice.</span>
+</div>
+
+<!-- Popup overlay (shared) -->
+<div class="pop-overlay" id="popOverlay" onclick="closePopup(event)">
+  <div class="pop-box">
+    <div class="pop-header">
+      <h3 id="popTitle"></h3>
+      <button class="pop-close" onclick="closePopup()">✕</button>
+    </div>
+    <div class="pop-body" id="popBody"></div>
+  </div>
+</div>
+
+<div class="grammar-layout">
+
+  <!-- Sidebar nav -->
+  <nav class="grammar-nav" id="grammarNav">
+    <div class="nav-label">Topics</div>
+    <!-- filled by JS -->
+  </nav>
+
+  <!-- Main content -->
+  <main class="grammar-content" id="grammarContent">
+    <!-- filled by JS -->
+  </main>
+
+</div>
+
+<script src="speech.js"></script>
+<script src="a1_grammar_data.js"></script>
+<script>
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const COLOR_CYCLE = ['blue','green','amber','teal','blue','green'];
+
+function th(text, color) {
+  const el = document.createElement('th');
+  el.textContent = text;
+  el.className = color;
+  return el;
+}
+
+function buildTable(block) {
+  const color = block.color || 'blue';
+  const altClass = color === 'green' ? 'green-rows' : color === 'amber' ? 'amber-rows' : color === 'teal' ? 'teal-rows' : '';
+
+  const wrap = document.createDocumentFragment();
+
+  // Label
+  const lbl = document.createElement('div');
+  lbl.className = `block-label ${color}`;
+  lbl.textContent = block.label || '';
+  wrap.appendChild(lbl);
+
+  // Table
+  const tbl = document.createElement('table');
+  tbl.className = `g-table ${altClass}`;
+
+  const thead = document.createElement('thead');
+  const hrow  = document.createElement('tr');
+  block.headers.forEach(h => hrow.appendChild(th(h, color)));
+  thead.appendChild(hrow);
+  tbl.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  block.rows.forEach(row => {
+    const tr = document.createElement('tr');
+    row.forEach((cell, ci) => {
+      const td = document.createElement('td');
+      td.textContent = cell;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  wrap.appendChild(tbl);
+  return wrap;
+}
+
+function openPopup(title, bodyHtml) {
+  document.getElementById('popTitle').textContent = title;
+  document.getElementById('popBody').innerHTML = bodyHtml;
+  document.getElementById('popOverlay').classList.add('open');
+}
+function closePopup(e) {
+  if (!e || e.target === document.getElementById('popOverlay')) {
+    document.getElementById('popOverlay').classList.remove('open');
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
+
+function buildExamples(block) {
+  const wrap = document.createDocumentFragment();
+  const lbl = document.createElement('div');
+  lbl.className = 'block-label green';
+
+  // Label + optional popup trigger button
+  if (block.popup) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;';
+    const txt = document.createElement('span');
+    txt.textContent = block.label || 'Examples';
+    const btn = document.createElement('button');
+    btn.className = 'info-btn';
+    btn.textContent = '? ' + block.popup.trigger;
+    btn.onclick = () => openPopup(block.popup.title, block.popup.body);
+    row.appendChild(txt);
+    row.appendChild(btn);
+    lbl.appendChild(row);
+  } else {
+    lbl.textContent = block.label || 'Examples';
+  }
+  wrap.appendChild(lbl);
+
+  const div = document.createElement('div');
+  div.className = 'g-examples';
+  block.items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'g-ex-row';
+
+    const btn = makeWordBtn(item.de);
+    btn.onclick = () => speakText(item.de, 0.82);
+
+    const de = document.createElement('span');
+    de.className = 'g-ex-de';
+    de.textContent = item.de;
+
+    const en = document.createElement('span');
+    en.className = 'g-ex-en';
+    en.textContent = item.en;
+
+    row.appendChild(btn);
+    row.appendChild(de);
+    row.appendChild(en);
+    div.appendChild(row);
+  });
+  wrap.appendChild(div);
+  return wrap;
+}
+
+function buildRule(block) {
+  const p = document.createElement('p');
+  p.className = 'g-rule';
+  p.textContent = '⚡ ' + block.text;
+  return p;
+}
+
+function buildNote(block) {
+  const p = document.createElement('p');
+  p.className = 'g-note';
+  p.textContent = 'ℹ️ ' + block.text;
+  return p;
+}
+
+// ── Render topics ──────────────────────────────────────────────────────────
+const nav     = document.getElementById('grammarNav');
+const content = document.getElementById('grammarContent');
+
+GRAMMAR_TOPICS.forEach((topic, idx) => {
+  // Nav link
+  const a = document.createElement('a');
+  a.href = `#${topic.id}`;
+  a.textContent = `${idx + 1}. ${topic.title}`;
+  nav.appendChild(a);
+
+  // Section
+  const section = document.createElement('section');
+  section.className = 'g-section';
+  section.id = topic.id;
+
+  // Section title row
+  const titleRow = document.createElement('div');
+  titleRow.className = 'g-section-title';
+
+  const titleText = document.createElement('span');
+  titleText.innerHTML = `<span class="num">${idx + 1}.</span> ${topic.icon} ${topic.title} <span style="opacity:0.6;font-weight:400;font-size:0.82rem">(${topic.subtitle})</span>`;
+
+  // Chapter play button — reads all examples aloud
+  const allWords = [];
+  topic.blocks.forEach(b => {
+    if (b.type === 'examples') b.items.forEach(i => allWords.push(i.de));
+  });
+
+  const playBtn = document.createElement('button');
+  playBtn.className = 'play-btn';
+  playBtn.innerHTML = '<svg viewBox="0 0 10 10"><polygon points="1,0 9,5 1,10"/></svg> Examples';
+  playBtn.style.marginLeft = '0.8rem';
+  if (allWords.length) {
+    playBtn.onclick = () => speakList(allWords, playBtn, ' Examples');
+  } else {
+    playBtn.style.display = 'none';
+  }
+
+  titleRow.appendChild(titleText);
+  titleRow.appendChild(playBtn);
+  section.appendChild(titleRow);
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'g-section-body';
+
+  topic.blocks.forEach(block => {
+    if (block.type === 'table')    body.appendChild(buildTable(block));
+    else if (block.type === 'examples') body.appendChild(buildExamples(block));
+    else if (block.type === 'rule')     body.appendChild(buildRule(block));
+    else if (block.type === 'note')     body.appendChild(buildNote(block));
+  });
+
+  section.appendChild(body);
+  content.appendChild(section);
+});
+
+// ── Highlight active nav on scroll ─────────────────────────────────────────
+const navLinks = nav.querySelectorAll('a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = nav.querySelector(`a[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+
+document.querySelectorAll('.g-section').forEach(s => observer.observe(s));
+
+// ── Boot TTS ────────────────────────────────────────────────────────────────
+loadGermanVoice().then(v => {
+  if (!v) {
+    const bar = document.getElementById('voiceBar');
+    bar.style.display = 'flex';
+    bar.innerHTML = '<span style="color:#b91c1c;font-size:0.85rem">⚠️ No German voice found. Go to System Settings → Accessibility → Spoken Content and download a German (Deutschland) voice.</span>';
+  }
+});
+
+</script>
+</body>
+</html>
